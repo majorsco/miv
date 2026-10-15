@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MIV — Invest in what people actually need</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --parchment:#F6F1E7; --ink:#211C16; --indigo:#22365B; --gold:#B8872B; --tan:#D8CBB0;
+    --sans:'Space Grotesk',-apple-system,sans-serif; --serif:'Fraunces',Georgia,serif;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--parchment);color:var(--ink);font-family:var(--sans);line-height:1.5;}
+  img,svg{max-width:100%;}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px;}
+  .weave{height:6px;background:repeating-linear-gradient(135deg,var(--tan) 0 8px,transparent 8px 16px);opacity:.7;}
+
+  header{padding:22px 0;}
+  header .wrap{display:flex;align-items:center;justify-content:space-between;}
+  .logo{font-weight:700;font-size:20px;letter-spacing:.3px;}
+  nav a{color:var(--ink);text-decoration:none;margin-left:28px;font-size:14px;opacity:.75;}
+  nav a:hover{opacity:1;}
+  .pill{background:var(--indigo);color:var(--parchment);padding:9px 18px;border-radius:999px;font-size:14px;font-weight:500;text-decoration:none;}
+
+  .hero{padding:50px 0 70px;}
+  .hero .wrap{display:grid;grid-template-columns:1.2fr 1fr;gap:56px;align-items:center;}
+  h1{font-size:44px;line-height:1.08;margin:0 0 20px;font-weight:700;max-width:16ch;}
+  .hero p{font-size:17px;max-width:46ch;opacity:.82;margin:0 0 28px;}
+  .cta-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
+  .btn{background:var(--indigo);color:var(--parchment);border:none;padding:13px 22px;border-radius:999px;
+    font-family:var(--sans);font-size:15px;font-weight:500;cursor:pointer;text-decoration:none;display:inline-block;}
+  .reassure{font-size:13px;opacity:.65;}
+
+  .ledger{background:var(--ink);color:var(--parchment);border-radius:14px;padding:26px;}
+  .ledger .cap{font-size:13px;opacity:.6;margin-bottom:14px;}
+  .ledger .row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(246,241,231,.12);font-size:14px;}
+  .ledger .row:last-child{border-bottom:none;}
+  .ledger .amt{font-family:var(--serif);color:var(--gold);font-weight:600;}
+  .ledger .total{margin-top:14px;padding-top:14px;border-top:1px solid rgba(246,241,231,.25);
+    display:flex;justify-content:space-between;align-items:baseline;}
+  .ledger .total .num{font-family:var(--serif);font-size:30px;color:var(--gold);font-weight:600;}
+
+  section{padding:60px 0;}
+  h2{font-size:28px;margin:0 0 36px;max-width:22ch;}
+
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:36px;}
+  .step .n{font-family:var(--serif);font-size:38px;color:var(--gold);font-weight:600;display:block;margin-bottom:10px;}
+  .step h3{font-size:17px;margin:0 0 8px;}
+  .step p{font-size:14.5px;opacity:.78;margin:0;}
+
+  .values{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;}
+  .value{border-left:2px solid var(--gold);padding-left:18px;}
+  .value h3{font-size:16px;margin:0 0 6px;}
+  .value p{font-size:14px;opacity:.78;margin:0;}
+
+  .faq details{border-bottom:1px solid var(--tan);padding:16px 0;}
+  .faq summary{cursor:pointer;font-size:16px;font-weight:500;list-style:none;display:flex;justify-content:space-between;}
+  .faq summary::-webkit-details-marker{display:none;}
+  .faq summary::after{content:'+';font-size:20px;color:var(--gold);}
+  .faq details[open] summary::after{content:'−';}
+  .faq p{font-size:14.5px;opacity:.82;margin:12px 0 0;max-width:62ch;}
+
+  .signup{background:var(--indigo);color:var(--parchment);}
+  .signup h2{color:var(--parchment);}
+  .signup p{opacity:.8;max-width:50ch;margin:0 0 24px;}
+  form{display:flex;gap:10px;flex-wrap:wrap;max-width:460px;}
+  input[type=email]{flex:1;min-width:200px;padding:13px 16px;border-radius:999px;border:none;font-family:var(--sans);font-size:15px;}
+  .signup .btn{background:var(--gold);color:var(--ink);}
+  .thanks{font-size:14px;margin-top:14px;display:none;}
+  .thanks.show{display:block;}
+
+  .demo-tag{display:inline-block;background:var(--gold);color:var(--ink);font-size:12px;font-weight:500;
+    padding:3px 10px;border-radius:999px;margin-bottom:14px;}
+  .products{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:30px;}
+  .product{border:1px solid var(--tan);border-radius:10px;padding:20px;background:rgba(255,255,255,.35);}
+  .product h3{font-size:16px;margin:0 0 6px;}
+  .product .desc{font-size:13.5px;opacity:.75;margin:0 0 14px;min-height:36px;}
+  .product .meta{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;}
+  .product .price{font-family:var(--serif);font-size:22px;font-weight:600;}
+  .product .rate{font-size:12px;opacity:.65;}
+  .product label{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;}
+  .product input[type=checkbox]{width:17px;height:17px;accent-color:var(--indigo);}
+
+  .demo-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:46px;}
+  .selected-total{font-size:14px;}
+  .selected-total b{font-family:var(--serif);color:var(--gold);font-size:18px;}
+
+  .portfolio{background:var(--ink);color:var(--parchment);border-radius:14px;padding:28px;}
+  .portfolio h3{margin:0 0 18px;font-size:18px;}
+  .pstats{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:20px;}
+  .pstat .label{font-size:12px;opacity:.6;}
+  .pstat .num{font-family:var(--serif);font-size:24px;color:var(--gold);font-weight:600;}
+  .positions{font-size:13.5px;}
+  .positions .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(246,241,231,.12);}
+  .positions .empty{opacity:.55;padding:6px 0;}
+  .reset-link{background:none;border:none;color:var(--parchment);opacity:.5;font-size:12px;cursor:pointer;
+    text-decoration:underline;padding:0;margin-top:14px;font-family:var(--sans);}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(33,28,22,.6);display:none;
+    align-items:center;justify-content:center;padding:20px;z-index:50;}
+  .modal-overlay.show{display:flex;}
+  .modal{background:var(--parchment);border-radius:14px;max-width:380px;width:100%;padding:26px;}
+  .modal h3{margin:0 0 4px;font-size:18px;}
+  .modal .sub{font-size:12.5px;opacity:.65;margin:0 0 18px;}
+  .modal label{display:block;font-size:12px;opacity:.7;margin:12px 0 4px;}
+  .modal input{width:100%;padding:11px 12px;border-radius:8px;border:1px solid var(--tan);
+    font-family:var(--sans);font-size:14px;background:#fff;}
+  .modal .row2{display:flex;gap:10px;}
+  .modal .pay-amt{font-family:var(--serif);font-size:20px;margin:16px 0;}
+  .modal .btn{width:100%;margin-top:6px;}
+  .modal .cancel{background:none;color:var(--ink);opacity:.6;text-align:center;width:100%;margin-top:10px;
+    border:none;cursor:pointer;font-family:var(--sans);font-size:13px;}
+  .modal .note{font-size:11px;opacity:.5;margin-top:14px;}
+
+  .sponsors{padding:30px 0;border-top:1px solid var(--tan);}
+  .sponsors .wrap{display:flex;align-items:center;gap:14px;}
+  .sponsors .label{font-size:12px;opacity:.55;}
+  .sponsor-chip{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--parchment);
+    padding:6px 14px 6px 6px;border-radius:999px;}
+  .sponsor-chip img{width:32px;height:32px;border-radius:50%;display:block;}
+  .sponsor-chip span{font-size:13px;font-weight:500;}
+
+  .dash{display:none;padding-top:env(safe-area-inset-top,0px);min-height:100vh;}
+  .dash .wrap{padding-top:22px;padding-bottom:60px;}
+  .dash-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;}
+  .dash-top a{color:var(--ink);opacity:.65;text-decoration:none;font-size:14px;}
+  .dash h2{margin-top:18px;}
+
+  .spinner{width:28px;height:28px;border-radius:50%;border:3px solid var(--tan);
+    border-top-color:var(--indigo);animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .tx-accordion{border:1px solid var(--tan);border-radius:10px;padding:4px 18px;margin-top:40px;}
+  .tx-accordion summary{cursor:pointer;font-size:15px;font-weight:500;list-style:none;display:flex;justify-content:space-between;padding:14px 0;}
+  .tx-accordion summary::-webkit-details-marker{display:none;}
+  .tx-accordion summary::after{content:'+';font-size:18px;color:var(--gold);}
+  .tx-accordion[open] summary::after{content:'−';}
+  .tx-row{display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid var(--tan);font-size:13.5px;}
+  .tx-row .amt-pos{color:#2d6b47;font-weight:600;}
+  .tx-row .amt-neg{color:#9b3b2a;font-weight:600;}
+  .tx-empty{opacity:.55;padding:6px 0 14px;font-size:13.5px;}
+
+  footer{padding:30px 0 50px;font-size:13px;opacity:.6;}
+
+  @media(max-width:760px){
+    .hero .wrap{grid-template-columns:1fr;}
+    .steps,.values,.products,.pstats{grid-template-columns:1fr;}
+    h1{font-size:34px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="view-landing">
+
+<header>
+  <div class="wrap">
+    <div class="logo">MIV</div>
+    <nav>
+      <a href="#how">How it works</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#products">Invest</a>
+      <a href="#login">Log in</a>
+      <a href="#faq">FAQ</a>
+      <a href="#join" class="pill">Early access</a>
+    </nav>
+  </div>
+</header>
+
+<div class="weave"></div>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <h1>Back what people actually buy. Get paid on a schedule.</h1>
+      <p>MIV turns everyday contribution culture into individual investing — put money behind real products, and get your share back weekly or monthly.</p>
+      <div class="cta-row">
+        <a href="#join" class="btn">Join early access</a>
+        <a href="#dashboard" class="reassure" style="text-decoration:underline;">Explore the demo dashboard</a>
+      </div>
+    </div>
+    <div class="ledger">
+      <div class="cap">Sample payout ledger</div>
+      <div class="row"><span>Week 1</span><span class="amt">+₦4,200</span></div>
+      <div class="row"><span>Week 2</span><span class="amt">+₦4,650</span></div>
+      <div class="row"><span>Week 3</span><span class="amt">+₦4,980</span></div>
+      <div class="total"><span>Running total</span><span class="num" id="counter">₦0</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="weave"></div>
+
+<section id="how">
+  <div class="wrap">
+    <h2>From contribution to payout, in three steps</h2>
+    <div class="steps">
+      <div class="step"><span class="n">01</span><h3>Join a cycle</h3><p>Pick a product or venture backed on MIV, and put in what you're comfortable with.</p></div>
+      <div class="step"><span class="n">02</span><h3>It gets put to work</h3><p>Your contribution goes toward real inventory or activity — nothing abstract, nothing you can't see.</p></div>
+      <div class="step"><span class="n">03</span><h3>You get paid</h3><p>Returns come back on a weekly or monthly schedule, same as the cycles you already know.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Built for Lagos and for everyone who left it</h2>
+    <div class="values">
+      <div class="value"><h3>Local and diaspora, both first-class</h3><p>Whether you're contributing from Yaba or from London, the experience is built for you, not bolted on.</p></div>
+      <div class="value"><h3>Full visibility</h3><p>See exactly what your money is backing — not a black box, not a promise with no name on it.</p></div>
+      <div class="value"><h3>Familiar rhythm</h3><p>Weekly or monthly payouts, the same cadence as the contribution circles Nigerians have always trusted.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="weave"></div>
+
+<section id="faq" class="faq">
+  <div class="wrap">
+    <h2>Before you ask</h2>
+    <details>
+      <summary>Is MIV live yet?</summary>
+      <p>Not yet. We're in early access — this is about joining the waitlist and shaping what launches, not moving money today.</p>
+    </details>
+    <details>
+      <summary>Is this regulated?</summary>
+      <p>We're working through the right registrations before opening real investment slots. We'd rather launch slow and correctly than fast and in trouble — that protects you as much as it protects us.</p>
+    </details>
+    <details>
+      <summary>What counts as a "product"?</summary>
+      <p>Still being finalized. The model stays the same regardless: real, visible activity you can back, with scheduled payouts.</p>
+    </details>
+    <details>
+      <summary>How is this different from the schemes that collapsed before?</summary>
+      <p>Fair question to ask of anyone promising returns. Our answer is visibility and registration, not just a bigger promise — you'll be able to see what you're backing, not just a number going up.</p>
+    </details>
+  </div>
+</section>
+
+<section class="signup" id="join">
+  <div class="wrap">
+    <h2>Get in before the doors open</h2>
+    <p>Leave your email and we'll reach out when early access slots are ready — no commitment, no payment, just first in line.</p>
+    <form id="waitlistForm">
+      <input type="email" id="emailInput" placeholder="you@email.com" required>
+      <button type="submit" class="btn">Request access</button>
+    </form>
+    <p class="thanks" id="thanksMsg">You're on the list — we'll be in touch.</p>
+  </div>
+</section>
+
+<div class="sponsors">
+  <div class="wrap">
+    <span class="label">Sponsored by</span>
+    <div class="sponsor-chip">
+      <img src="data:image/png;base64,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" alt="MajorEnterPrise logo">
+      <span>MajorEnterPrise</span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">MIV — early access brand preview. Not yet accepting investments.</div>
+</footer>
+
+</div><!-- /view-landing -->
+
+<div id="view-dashboard" class="dash">
+  <div class="wrap">
+    <div class="dash-top">
+      <div class="logo">MIV</div>
+      <div style="display:flex;gap:18px;align-items:center;">
+        <span id="dashUserEmail" style="font-size:13px;opacity:.6;"></span>
+        <a href="#" id="logoutLink">Log out</a>
+        <a href="#" id="backToSite">← Back to site</a>
+      </div>
+    </div>
+
+    <span class="demo-tag">Demo — illustrative only, not a real offer</span>
+    <h2>Your portfolio</h2>
+
+    <div class="portfolio">
+      <h3>Your demo portfolio</h3>
+      <div class="pstats">
+        <div class="pstat"><div class="label">Demo wallet</div><div class="num" id="statBalance">₦0</div></div>
+        <div class="pstat"><div class="label">Total invested</div><div class="num" id="statInvested">₦0</div></div>
+        <div class="pstat"><div class="label">Projected profit / cycle</div><div class="num" id="statProfit">₦0</div></div>
+      </div>
+      <div class="demo-actions" style="margin:4px 0 22px;">
+        <button class="btn" id="addMoneyBtn" style="background:var(--gold);color:var(--ink);">Add money</button>
+        <button class="btn" id="withdrawBtn" style="background:transparent;border:1px solid var(--parchment);color:var(--parchment);">Withdraw</button>
+      </div>
+      <div class="positions" id="positionsList"></div>
+      <button class="reset-link" id="resetDemo">Reset demo portfolio</button>
+    </div>
+
+    <div class="portfolio" style="background:transparent;border:1px solid var(--tan);color:var(--ink);margin-top:40px;">
+      <h3 style="margin-bottom:6px;">Looking to grow your balance?</h3>
+      <p style="font-size:14px;opacity:.75;margin:0 0 16px;">Browse what's open to back right now and put some of your demo wallet to work.</p>
+      <a href="#products" class="btn">Browse products</a>
+    </div>
+
+    <details class="tx-accordion">
+      <summary>Transaction history</summary>
+      <div id="txList"></div>
+    </details>
+  </div>
+</div>
+
+<div id="view-products" class="dash">
+  <div class="wrap">
+    <div class="dash-top">
+      <div class="logo">MIV</div>
+      <a href="#dashboard">← Back to dashboard</a>
+    </div>
+
+    <span class="demo-tag">Demo — illustrative only, not a real offer</span>
+    <h2>Invest in a product</h2>
+
+    <div class="products" id="productGrid"></div>
+
+    <div class="demo-actions">
+      <button class="btn" id="investBtn">Invest selected</button>
+      <span class="selected-total">Selected: <b id="selectedTotal">₦0</b></span>
+    </div>
+  </div>
+</div>
+
+<div id="view-splash" class="dash">
+  <div class="wrap" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;text-align:center;">
+    <div class="logo" style="font-size:30px;margin-bottom:18px;">MIV</div>
+    <div class="spinner"></div>
+    <p style="font-size:13px;opacity:.6;margin-top:16px;">Loading your account...</p>
+  </div>
+</div>
+
+<div id="view-auth" class="dash">
+  <div class="wrap" style="max-width:420px;">
+    <div class="dash-top">
+      <div class="logo">MIV</div>
+      <a href="#" id="authBackToSite">← Back to site</a>
+    </div>
+    <h2 id="authTitle" style="margin-top:10px;">Log in</h2>
+    <p style="font-size:13px;opacity:.65;margin-top:-26px;margin-bottom:22px;">Demo accounts — stored only in this browser, not a real authentication system.</p>
+    <label style="display:block;font-size:12px;opacity:.7;margin-bottom:5px;">Email</label>
+    <input type="email" id="authEmail" style="width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--tan);margin-bottom:14px;font-family:var(--sans);font-size:14px;">
+    <label style="display:block;font-size:12px;opacity:.7;margin-bottom:5px;">Password</label>
+    <input type="password" id="authPassword" style="width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--tan);font-family:var(--sans);font-size:14px;">
+    <p id="authError" style="color:#9b3b2a;font-size:13px;display:none;margin:10px 0 0;"></p>
+    <button class="btn" id="authSubmit" style="width:100%;margin-top:18px;">Log in</button>
+    <p style="text-align:center;font-size:13px;margin-top:16px;">
+      <span id="authToggleText">New here?</span> <a href="#" id="authToggleLink" style="text-decoration:underline;">Sign up</a>
+    </p>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 id="modalTitle">Demo checkout</h3>
+    <p class="sub" id="modalSub">Simulated test payment — styled after a card checkout flow, no real funds move and nothing is sent to Paystack.</p>
+    <div id="amountField" style="display:none;">
+      <label>Amount (₦)</label>
+      <input type="number" id="amountInput" min="100" step="100" placeholder="e.g. 5000">
+    </div>
+    <div id="cardFields">
+      <label>Card number</label>
+      <input type="text" value="4084 0840 8408 4081" readonly>
+      <div class="row2">
+        <div style="flex:1"><label>Expiry</label><input type="text" value="12/30" readonly></div>
+        <div style="flex:1"><label>CVV</label><input type="text" value="408" readonly></div>
+      </div>
+    </div>
+    <div class="pay-amt"><span id="payVerb">Pay</span> <span id="modalAmt">₦0</span> <span style="font-size:12px;opacity:.6;">(demo)</span></div>
+    <p id="modalError" style="color:#9b3b2a;font-size:13px;display:none;margin:0 0 10px;"></p>
+    <button class="btn" id="payBtn">Pay (demo)</button>
+    <button class="cancel" id="cancelPay">Cancel</button>
+    <p class="note" id="modalNote">Real Paystack checkout requires a live backend to verify transactions — this page is a static preview, so it mimics the flow instead.</p>
+  </div>
+</div>
+
+
+<script>
+  const form = document.getElementById('waitlistForm');
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    try{
+      const list = JSON.parse(localStorage.getItem('miv-waitlist')||'[]');
+      list.push(document.getElementById('emailInput').value);
+      localStorage.setItem('miv-waitlist', JSON.stringify(list));
+    }catch(err){}
+    form.style.display='none';
+    document.getElementById('thanksMsg').classList.add('show');
+  });
+
+  const landingEl = document.getElementById('view-landing');
+  const dashEl = document.getElementById('view-dashboard');
+  const productsEl = document.getElementById('view-products');
+  const splashEl = document.getElementById('view-splash');
+  const authEl = document.getElementById('view-auth');
+  let splashTimer = null;
+
+  const ACC_KEY = 'miv-accounts';
+  const CUR_KEY = 'miv-current-email';
+  function loadAccounts(){ try{ return JSON.parse(localStorage.getItem(ACC_KEY)||'{}'); }catch(e){ return {}; } }
+  function saveAccounts(a){ try{ localStorage.setItem(ACC_KEY, JSON.stringify(a)); }catch(e){} }
+  function getCurrentEmail(){ try{ return localStorage.getItem(CUR_KEY); }catch(e){ return null; } }
+  function setCurrentEmail(e){ try{ e ? localStorage.setItem(CUR_KEY,e) : localStorage.removeItem(CUR_KEY); }catch(err){} }
+  function newAccount(){ return {balance:50000, positions:[], transactions:[]}; }
+
+  function hideAllViews(){
+    landingEl.style.display='none'; dashEl.style.display='none';
+    productsEl.style.display='none'; splashEl.style.display='none'; authEl.style.display='none';
+  }
+  function routeView(){
+    const h = location.hash;
+    clearTimeout(splashTimer);
+    if(h === '#dashboard' || h === '#products'){
+      if(!getCurrentEmail()){ location.hash = '#login'; return; }
+      hideAllViews();
+      portfolio = loadPortfolio();
+      if(h === '#dashboard'){
+        dashEl.style.display='block';
+        document.getElementById('dashUserEmail').textContent = getCurrentEmail();
+        renderPortfolio();
+      } else {
+        productsEl.style.display='block';
+        updateSelectedTotal();
+      }
+      window.scrollTo(0,0);
+    } else if(h === '#login'){
+      hideAllViews();
+      splashEl.style.display='block';
+      window.scrollTo(0,0);
+      splashTimer = setTimeout(()=>{
+        if(location.hash === '#login'){ splashEl.style.display='none'; authEl.style.display='block'; }
+      }, 800);
+    } else {
+      hideAllViews();
+      landingEl.style.display='';
+    }
+  }
+  window.addEventListener('hashchange', routeView);
+
+  let authMode = 'login';
+  function renderAuthMode(){
+    const isLogin = authMode === 'login';
+    document.getElementById('authTitle').textContent = isLogin ? 'Log in' : 'Sign up';
+    document.getElementById('authSubmit').textContent = isLogin ? 'Log in' : 'Create account';
+    document.getElementById('authToggleText').textContent = isLogin ? 'New here?' : 'Already have an account?';
+    document.getElementById('authToggleLink').textContent = isLogin ? 'Sign up' : 'Log in';
+    document.getElementById('authError').style.display = 'none';
+  }
+  renderAuthMode();
+  document.getElementById('authToggleLink').addEventListener('click', e=>{
+    e.preventDefault(); authMode = authMode==='login' ? 'signup' : 'login'; renderAuthMode();
+  });
+  function authFail(msg){
+    const el = document.getElementById('authError');
+    el.textContent = msg; el.style.display = 'block';
+  }
+  document.getElementById('authSubmit').addEventListener('click', ()=>{
+    const email = document.getElementById('authEmail').value.trim().toLowerCase();
+    const password = document.getElementById('authPassword').value;
+    if(!email.includes('@') || !password){ authFail('Enter a valid email and password.'); return; }
+    const accs = loadAccounts();
+    if(authMode === 'signup'){
+      if(accs[email]){ authFail('An account already exists for that email — log in instead.'); return; }
+      accs[email] = Object.assign({password}, newAccount());
+      saveAccounts(accs);
+    } else {
+      if(!accs[email]){ authFail('No account found for that email — sign up instead.'); return; }
+      if(accs[email].password !== password){ authFail('Incorrect password.'); return; }
+    }
+    setCurrentEmail(email);
+    location.hash = '#dashboard';
+  });
+  document.getElementById('authBackToSite').addEventListener('click', e=>{ e.preventDefault(); location.hash=''; });
+  document.getElementById('backToSite').addEventListener('click', e=>{ e.preventDefault(); location.hash=''; });
+  document.getElementById('logoutLink').addEventListener('click', e=>{
+    e.preventDefault(); setCurrentEmail(null); location.hash='';
+  });
+
+  const products = [
+    {id:'produce', name:'Fresh Produce Cycle', desc:'A weekly trading run on market produce.', price:10000, rate:0.04, cadence:'weekly'},
+    {id:'retail', name:'Retail Restock', desc:'Inventory restock for a retail partner.', price:25000, rate:0.12, cadence:'monthly'},
+    {id:'logistics', name:'Delivery Fleet', desc:'Short-haul delivery and logistics runs.', price:15000, rate:0.05, cadence:'weekly'},
+    {id:'poultry', name:'Poultry Farm Cycle', desc:'A production run backing a small poultry farm.', price:20000, rate:0.10, cadence:'monthly'},
+    {id:'solar', name:'Solar Mini-Grid', desc:'Shared backing for a community solar installation.', price:40000, rate:0.15, cadence:'monthly'},
+    {id:'textile', name:'Textile & Fashion Batch', desc:'A production batch for a local fashion label.', price:18000, rate:0.06, cadence:'weekly'}
+  ];
+  function loadPortfolio(){
+    const email = getCurrentEmail();
+    if(!email) return newAccount();
+    const accs = loadAccounts();
+    if(!accs[email]) return newAccount();
+    return accs[email];
+  }
+  function savePortfolio(p){
+    const email = getCurrentEmail();
+    if(!email) return;
+    const accs = loadAccounts();
+    const password = accs[email] ? accs[email].password : undefined;
+    accs[email] = Object.assign({password}, p);
+    saveAccounts(accs);
+  }
+  function logTx(type, label, amount){
+    portfolio.transactions.unshift({type, label, amount, ts: Date.now()});
+  }
+  let portfolio = newAccount();
+  routeView();
+
+  const grid = document.getElementById('productGrid');
+  products.forEach(p=>{
+    const div = document.createElement('div'); div.className = 'product';
+    div.innerHTML = `
+      <h3>${p.name}</h3>
+      <p class="desc">${p.desc}</p>
+      <div class="meta">
+        <span class="price">₦${p.price.toLocaleString()}</span>
+        <span class="rate">${Math.round(p.rate*100)}% / ${p.cadence} (illustrative)</span>
+      </div>
+      <label><input type="checkbox" data-id="${p.id}"> Select to invest</label>`;
+    grid.appendChild(div);
+  });
+
+  const selectedTotalEl = document.getElementById('selectedTotal');
+  function updateSelectedTotal(){
+    const checked = [...grid.querySelectorAll('input:checked')];
+    const total = checked.reduce((sum,c)=>sum + products.find(p=>p.id===c.dataset.id).price, 0);
+    selectedTotalEl.textContent = '₦'+total.toLocaleString();
+    return total;
+  }
+  grid.addEventListener('change', updateSelectedTotal);
+
+  const overlay = document.getElementById('modalOverlay');
+  const modalAmt = document.getElementById('modalAmt');
+  const amountField = document.getElementById('amountField');
+  const amountInput = document.getElementById('amountInput');
+  const cardFields = document.getElementById('cardFields');
+  const modalError = document.getElementById('modalError');
+  const payVerb = document.getElementById('payVerb');
+  const modalNote = document.getElementById('modalNote');
+  let pendingSelection = [];
+  let modalMode = 'invest';
+
+  function clearModalError(){ modalError.style.display='none'; modalError.textContent=''; }
+  function showModalError(msg){ modalError.textContent = msg; modalError.style.display='block'; }
+
+  document.getElementById('investBtn').addEventListener('click', ()=>{
+    pendingSelection = [...grid.querySelectorAll('input:checked')].map(c=>c.dataset.id);
+    const total = updateSelectedTotal();
+    if(!pendingSelection.length){ return; }
+    modalMode = 'invest'; clearModalError();
+    amountField.style.display='none'; cardFields.style.display='block';
+    payVerb.textContent='Pay'; document.getElementById('payBtn').textContent='Pay (demo)';
+    modalNote.textContent='Real Paystack checkout requires a live backend to verify transactions — this page is a static preview, so it mimics the flow instead.';
+    if(total > portfolio.balance) showModalError('Selected total exceeds your demo wallet balance.');
+    modalAmt.textContent = '₦'+total.toLocaleString();
+    overlay.classList.add('show');
+  });
+
+  document.getElementById('addMoneyBtn').addEventListener('click', ()=>{
+    modalMode = 'deposit'; clearModalError();
+    amountField.style.display='block'; cardFields.style.display='block';
+    amountInput.value = '';
+    payVerb.textContent='Pay'; document.getElementById('payBtn').textContent='Pay (demo)';
+    modalNote.textContent='Simulated top-up — styled after a card checkout, no real funds move.';
+    modalAmt.textContent = '₦0';
+    overlay.classList.add('show');
+  });
+
+  document.getElementById('withdrawBtn').addEventListener('click', ()=>{
+    modalMode = 'withdraw'; clearModalError();
+    amountField.style.display='block'; cardFields.style.display='none';
+    amountInput.value = '';
+    payVerb.textContent='Withdraw'; document.getElementById('payBtn').textContent='Withdraw (demo)';
+    modalNote.textContent='Simulated withdrawal — no real payout occurs, demo balance only.';
+    modalAmt.textContent = '₦0';
+    overlay.classList.add('show');
+  });
+
+  amountInput.addEventListener('input', ()=>{
+    const v = parseInt(amountInput.value)||0;
+    modalAmt.textContent = '₦'+v.toLocaleString();
+  });
+
+  document.getElementById('cancelPay').addEventListener('click', ()=> overlay.classList.remove('show'));
+
+  document.getElementById('payBtn').addEventListener('click', (e)=>{
+    const btn = e.target;
+    clearModalError();
+
+    if(modalMode === 'invest'){
+      const total = products.filter(p=>pendingSelection.includes(p.id)).reduce((s,p)=>s+p.price,0);
+      if(total > portfolio.balance){ showModalError('Selected total exceeds your demo wallet balance.'); return; }
+    } else {
+      const amt = parseInt(amountInput.value)||0;
+      if(amt <= 0){ showModalError('Enter an amount greater than zero.'); return; }
+      if(modalMode === 'withdraw' && amt > portfolio.balance){ showModalError('You can\'t withdraw more than your demo wallet balance.'); return; }
+    }
+
+    btn.disabled = true;
+    const originalLabel = btn.textContent; btn.textContent = 'Processing...';
+    setTimeout(()=>{
+      if(modalMode === 'invest'){
+        pendingSelection.forEach(id=>{
+          const p = products.find(x=>x.id===id);
+          portfolio.balance -= p.price;
+          portfolio.positions.push({id:p.id, name:p.name, amount:p.price, rate:p.rate, cadence:p.cadence});
+          logTx('invest', 'Invested in '+p.name, p.price);
+        });
+        grid.querySelectorAll('input:checked').forEach(c=>c.checked=false);
+        updateSelectedTotal();
+      } else if(modalMode === 'deposit'){
+        const amt = parseInt(amountInput.value)||0;
+        portfolio.balance += amt;
+        logTx('deposit', 'Wallet top-up', amt);
+      } else if(modalMode === 'withdraw'){
+        const amt = parseInt(amountInput.value)||0;
+        portfolio.balance -= amt;
+        logTx('withdraw', 'Withdrawal', amt);
+      }
+      savePortfolio(portfolio);
+      renderPortfolio();
+      btn.textContent = originalLabel; btn.disabled = false;
+      overlay.classList.remove('show');
+      if(modalMode === 'invest') location.hash = '#dashboard';
+    }, 1100);
+  });
+
+  function renderPortfolio(){
+    document.getElementById('statBalance').textContent = '₦'+portfolio.balance.toLocaleString();
+    const invested = portfolio.positions.reduce((s,p)=>s+p.amount,0);
+    document.getElementById('statInvested').textContent = '₦'+invested.toLocaleString();
+    const profit = portfolio.positions.reduce((s,p)=>s+Math.round(p.amount*p.rate),0);
+    document.getElementById('statProfit').textContent = '₦'+profit.toLocaleString();
+    const list = document.getElementById('positionsList');
+    if(!portfolio.positions.length){
+      list.innerHTML = '<div class="empty">No positions yet — select a product above to try it.</div>';
+    } else {
+      list.innerHTML = portfolio.positions.map(p=>
+        `<div class="row"><span>${p.name}</span><span>₦${p.amount.toLocaleString()} · ${Math.round(p.rate*100)}%/${p.cadence}</span></div>`
+      ).join('');
+    }
+    const txList = document.getElementById('txList');
+    if(!portfolio.transactions || !portfolio.transactions.length){
+      txList.innerHTML = '<div class="tx-empty">No transactions yet.</div>';
+    } else {
+      txList.innerHTML = portfolio.transactions.map(t=>{
+        const sign = t.type==='deposit' ? '+' : '−';
+        const cls = t.type==='deposit' ? 'amt-pos' : 'amt-neg';
+        const date = new Date(t.ts).toLocaleDateString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+        return `<div class="tx-row"><span>${t.label}<br><span style="opacity:.55;font-size:12px;">${date}</span></span><span class="${cls}">${sign}₦${t.amount.toLocaleString()}</span></div>`;
+      }).join('');
+    }
+  }
+
+  document.getElementById('resetDemo').addEventListener('click', ()=>{
+    portfolio = newAccount();
+    savePortfolio(portfolio);
+    renderPortfolio();
+  });
+
+  const counterEl = document.getElementById('counter');
+  let n = 0; const target = 13830;
+  const step = ()=>{
+    n = Math.min(target, n + Math.ceil(target/40));
+    counterEl.textContent = '₦'+n.toLocaleString();
+    if(n < target) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+</script>
+</body>
+</html>
