@@ -383,6 +383,18 @@
 </div>
 
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+  // ===== Supabase config: paste your values from Project Settings > API Keys =====
+  // Only the Project URL and the anon / publishable key go here. NEVER the service_role / secret key.
+  const SUPABASE_URL = 'https://jaluzobyyoqppgtkykqb.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphbHV6b2J5eW9xcHBndGt5a3FiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5OTQ5NjcsImV4cCI6MjEwNzU3MDk2N30.2Jmucq0eSGowmiNtvAqlrvyKG5fH0cForGvnAgpvCLU';
+  const sbReady = !SUPABASE_URL.startsWith('PASTE') && !SUPABASE_ANON_KEY.startsWith('PASTE');
+  const sb = sbReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+  let currentEmail = null;
+  const emptyLive = ()=>({balance:0, positions:[], transactions:[]});
+  let livePortfolio = emptyLive();
+</script>
 <script>
   const form = document.getElementById('waitlistForm');
   form.addEventListener('submit', e=>{
@@ -407,8 +419,8 @@
   const CUR_KEY = 'miv-current-email';
   function loadAccounts(){ try{ return JSON.parse(localStorage.getItem(ACC_KEY)||'{}'); }catch(e){ return {}; } }
   function saveAccounts(a){ try{ localStorage.setItem(ACC_KEY, JSON.stringify(a)); }catch(e){} }
-  function getCurrentEmail(){ try{ return localStorage.getItem(CUR_KEY); }catch(e){ return null; } }
-  function setCurrentEmail(e){ try{ e ? localStorage.setItem(CUR_KEY,e) : localStorage.removeItem(CUR_KEY); }catch(err){} }
+  function getCurrentEmail(){ return currentEmail; }
+  function setCurrentEmail(e){ e = e || null; if(e !== currentEmail){ livePortfolio = emptyLive(); } currentEmail = e; }
   function newAccount(){ return {balance:50000, positions:[], transactions:[]}; }
 
   function hideAllViews(){
@@ -426,6 +438,7 @@
         dashEl.style.display='block';
         document.getElementById('dashUserEmail').textContent = getCurrentEmail();
         renderPortfolio();
+        refreshLivePortfolio();
       } else {
         productsEl.style.display='block';
         updateSelectedTotal();
@@ -462,29 +475,44 @@
     const el = document.getElementById('authError');
     el.textContent = msg; el.style.display = 'block';
   }
-  document.getElementById('authSubmit').addEventListener('click', ()=>{
+  document.getElementById('authSubmit').addEventListener('click', async ()=>{
     const email = document.getElementById('authEmail').value.trim().toLowerCase();
     const password = document.getElementById('authPassword').value;
     if(!email.includes('@') || !password){ authFail('Enter a valid email and password.'); return; }
-    const accs = loadAccounts();
-    if(authMode === 'signup'){
-      if(accs[email]){ authFail('An account already exists for that email — log in instead.'); return; }
-      accs[email] = Object.assign({password}, newAccount());
-      saveAccounts(accs);
-    } else {
-      if(!accs[email]){ authFail('No account found for that email — sign up instead.'); return; }
-      if(accs[email].password !== password){ authFail('Incorrect password.'); return; }
+    if(!sb){ authFail('Backend not connected yet: add your Supabase URL and key in index.html.'); return; }
+    if(authMode === 'signup' && password.length < 8){ authFail('Use a password of at least 8 characters.'); return; }
+    const btn = document.getElementById('authSubmit');
+    btn.disabled = true;
+    try{
+      let res;
+      if(authMode === 'signup'){
+        res = await sb.auth.signUp({ email, password });
+        if(res.error){ authFail(res.error.message); return; }
+        if(!res.data.session){
+          authFail('Account created. Check your email and click the confirmation link, then log in.');
+          authMode = 'login'; renderAuthMode();
+          document.getElementById('authError').style.display = 'block';
+          return;
+        }
+      } else {
+        res = await sb.auth.signInWithPassword({ email, password });
+        if(res.error){ authFail(res.error.message); return; }
+      }
+      setCurrentEmail(res.data.user.email);
+      location.hash = '#dashboard';
+    } catch(err){
+      authFail('Something went wrong. Please try again.');
+    } finally {
+      btn.disabled = false;
     }
-    setCurrentEmail(email);
-    location.hash = '#dashboard';
   });
   document.getElementById('authBackToSite').addEventListener('click', e=>{ e.preventDefault(); location.hash=''; });
   document.getElementById('backToSite').addEventListener('click', e=>{ e.preventDefault(); location.hash=''; });
   document.getElementById('logoutLink').addEventListener('click', e=>{
-    e.preventDefault(); setCurrentEmail(null); location.hash='';
+    e.preventDefault(); if(sb){ sb.auth.signOut(); } setCurrentEmail(null); location.hash='';
   });
 
-  const products = [
+  let products = [ // fallback only; live products load from Supabase
     {id:'produce', name:'Fresh Produce Cycle', desc:'A weekly trading run on market produce.', price:10000, rate:0.04, cadence:'weekly'},
     {id:'retail', name:'Retail Restock', desc:'Inventory restock for a retail partner.', price:25000, rate:0.12, cadence:'monthly'},
     {id:'logistics', name:'Delivery Fleet', desc:'Short-haul delivery and logistics runs.', price:15000, rate:0.05, cadence:'weekly'},
@@ -493,6 +521,7 @@
     {id:'textile', name:'Textile & Fashion Batch', desc:'A production batch for a local fashion label.', price:18000, rate:0.06, cadence:'weekly'}
   ];
   function loadPortfolio(){
+    if(sb) return livePortfolio;
     const email = getCurrentEmail();
     if(!email) return newAccount();
     const accs = loadAccounts();
@@ -500,32 +529,61 @@
     return accs[email];
   }
   function savePortfolio(p){
+    if(sb) return;   // live data is read-only in the browser
     const email = getCurrentEmail();
     if(!email) return;
     const accs = loadAccounts();
-    const password = accs[email] ? accs[email].password : undefined;
-    accs[email] = Object.assign({password}, p);
+    accs[email] = Object.assign({}, p);
     saveAccounts(accs);
   }
   function logTx(type, label, amount){
     portfolio.transactions.unshift({type, label, amount, ts: Date.now()});
   }
   let portfolio = newAccount();
-  routeView();
+  if(sb){
+    sb.auth.getSession().then(({data})=>{
+      setCurrentEmail(data.session ? data.session.user.email : null);
+      routeView();
+    });
+    sb.auth.onAuthStateChange((_evt, session)=>{
+      setCurrentEmail(session ? session.user.email : null);
+    });
+  } else {
+    routeView();
+  }
 
   const grid = document.getElementById('productGrid');
-  products.forEach(p=>{
-    const div = document.createElement('div'); div.className = 'product';
-    div.innerHTML = `
-      <h3>${p.name}</h3>
-      <p class="desc">${p.desc}</p>
-      <div class="meta">
-        <span class="price">₦${p.price.toLocaleString()}</span>
-        <span class="rate">${Math.round(p.rate*100)}% / ${p.cadence} (illustrative)</span>
-      </div>
-      <label><input type="checkbox" data-id="${p.id}"> Select to invest</label>`;
-    grid.appendChild(div);
-  });
+  function esc(t){ return String(t).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function renderProducts(){
+    grid.innerHTML = '';
+    products.forEach(p=>{
+      const div = document.createElement('div'); div.className = 'product';
+      div.innerHTML = `
+        <h3>${esc(p.name)}</h3>
+        <p class="desc">${esc(p.desc)}</p>
+        <div class="meta">
+          <span class="price">₦${p.price.toLocaleString()}</span>
+          <span class="rate">${Math.round(p.rate*100)}% / ${esc(p.cadence)} (illustrative)</span>
+        </div>
+        <label><input type="checkbox" data-id="${esc(p.id)}"> Select to invest</label>`;
+      grid.appendChild(div);
+    });
+  }
+  renderProducts();
+  async function loadProducts(){
+    if(!sb) return;
+    try{
+      const { data, error } = await sb.from('products').select('*').eq('is_active', true).order('min_amount');
+      if(error || !data || !data.length) return;   // keep fallback list on any problem
+      products = data.map(r=>({
+        id: r.id, name: r.name, desc: r.description || '',
+        price: Math.round(r.min_amount/100),       // kobo -> naira
+        rate: Number(r.roi_percent)/100, cadence: r.payout_frequency
+      }));
+      renderProducts(); updateSelectedTotal();
+    }catch(e){}
+  }
+  loadProducts();
 
   const selectedTotalEl = document.getElementById('selectedTotal');
   function updateSelectedTotal(){
@@ -551,6 +609,7 @@
   function showModalError(msg){ modalError.textContent = msg; modalError.style.display='block'; }
 
   document.getElementById('investBtn').addEventListener('click', ()=>{
+    if(sb){ liveNotice(); return; }
     pendingSelection = [...grid.querySelectorAll('input:checked')].map(c=>c.dataset.id);
     const total = updateSelectedTotal();
     if(!pendingSelection.length){ return; }
@@ -564,6 +623,7 @@
   });
 
   document.getElementById('addMoneyBtn').addEventListener('click', ()=>{
+    if(sb){ liveNotice(); return; }
     modalMode = 'deposit'; clearModalError();
     amountField.style.display='block'; cardFields.style.display='block';
     amountInput.value = '';
@@ -574,6 +634,7 @@
   });
 
   document.getElementById('withdrawBtn').addEventListener('click', ()=>{
+    if(sb){ liveNotice(); return; }
     modalMode = 'withdraw'; clearModalError();
     amountField.style.display='block'; cardFields.style.display='none';
     amountInput.value = '';
@@ -632,6 +693,52 @@
     }, 1100);
   });
 
+  async function refreshLivePortfolio(){
+    if(!sb || !currentEmail) return;
+    try{
+      const [txRes, invRes] = await Promise.all([
+        sb.from('transactions').select('type,amount,status,created_at').order('created_at',{ascending:false}),
+        sb.from('investments').select('amount,status,created_at,products(name,roi_percent,payout_frequency)')
+          .in('status',['pending','active']).order('created_at',{ascending:false})
+      ]);
+      if(txRes.error || invRes.error){ console.warn('MIV: could not load account data', txRes.error || invRes.error); return; }
+      const sign = {deposit:1, roi_payout:1, withdrawal:-1, investment:-1, fee:-1};
+      const names = {deposit:'Deposit', roi_payout:'Return payout', withdrawal:'Withdrawal', investment:'Investment', fee:'Fee'};
+      const balanceKobo = txRes.data.filter(t=>t.status==='completed')
+        .reduce((sum,t)=>sum + (sign[t.type]||0) * Math.abs(Number(t.amount)), 0);
+      livePortfolio = {
+        balance: Math.round(balanceKobo/100),
+        positions: invRes.data.map(r=>({
+          name: r.products ? r.products.name : 'Investment',
+          amount: Math.round(Number(r.amount)/100),
+          rate: r.products ? Number(r.products.roi_percent)/100 : 0,
+          cadence: r.products ? r.products.payout_frequency : ''
+        })),
+        transactions: txRes.data.map(t=>({
+          type: t.type,
+          label: (names[t.type]||t.type) + (t.status !== 'completed' ? ' ('+t.status+')' : ''),
+          amount: Math.round(Math.abs(Number(t.amount))/100),
+          ts: Date.parse(t.created_at)
+        }))
+      };
+      if(location.hash === '#dashboard'){ portfolio = livePortfolio; renderPortfolio(); }
+    }catch(e){ console.warn('MIV: account data error', e); }
+  }
+  function liveNotice(){
+    let t = document.getElementById('liveToast');
+    if(!t){
+      t = document.createElement('div'); t.id = 'liveToast';
+      t.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:#22365B;color:#F6F1E7;padding:14px 18px;border-radius:10px;font-size:14px;max-width:90%;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.25);';
+      document.body.appendChild(t);
+    }
+    t.textContent = "Deposits, investing and withdrawals aren't switched on yet. Your balance and investments will appear here once payments go live.";
+    t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(()=>{ t.style.display='none'; }, 5000);
+  }
+  if(sb){
+    document.getElementById('statBalance').previousElementSibling.textContent = 'Wallet balance';
+    const ph = document.querySelector('#view-dashboard .portfolio h3'); if(ph) ph.textContent = 'Your portfolio';
+    document.getElementById('resetDemo').style.display = 'none';
+  }
   function renderPortfolio(){
     document.getElementById('statBalance').textContent = '₦'+portfolio.balance.toLocaleString();
     const invested = portfolio.positions.reduce((s,p)=>s+p.amount,0);
@@ -640,7 +747,7 @@
     document.getElementById('statProfit').textContent = '₦'+profit.toLocaleString();
     const list = document.getElementById('positionsList');
     if(!portfolio.positions.length){
-      list.innerHTML = '<div class="empty">No positions yet — select a product above to try it.</div>';
+      list.innerHTML = '<div class="empty">No investments yet.</div>';
     } else {
       list.innerHTML = portfolio.positions.map(p=>
         `<div class="row"><span>${p.name}</span><span>₦${p.amount.toLocaleString()} · ${Math.round(p.rate*100)}%/${p.cadence}</span></div>`
@@ -651,8 +758,8 @@
       txList.innerHTML = '<div class="tx-empty">No transactions yet.</div>';
     } else {
       txList.innerHTML = portfolio.transactions.map(t=>{
-        const sign = t.type==='deposit' ? '+' : '−';
-        const cls = t.type==='deposit' ? 'amt-pos' : 'amt-neg';
+        const sign = (t.type==='deposit'||t.type==='roi_payout') ? '+' : '−';
+        const cls = (t.type==='deposit'||t.type==='roi_payout') ? 'amt-pos' : 'amt-neg';
         const date = new Date(t.ts).toLocaleDateString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
         return `<div class="tx-row"><span>${t.label}<br><span style="opacity:.55;font-size:12px;">${date}</span></span><span class="${cls}">${sign}₦${t.amount.toLocaleString()}</span></div>`;
       }).join('');
